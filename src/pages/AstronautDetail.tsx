@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, ArrowLeft, Download, Heart, Lungs, Send } from "lucide-react";
+import { ArrowLeft, Download, Heart, Activity, Send, AlertCircle } from "lucide-react";
 import RiskBadge from "@/components/RiskBadge";
 import VitalSign from "@/components/VitalSign";
 import Layout from "@/components/Layout";
@@ -402,7 +401,7 @@ const AstronautDetail = () => {
               <Card className="space-card">
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <Lungs className="h-5 w-5 mr-2 text-primary" />
+                    <Activity className="h-5 w-5 mr-2 text-primary" />
                     Respiratory Metrics
                   </CardTitle>
                 </CardHeader>
