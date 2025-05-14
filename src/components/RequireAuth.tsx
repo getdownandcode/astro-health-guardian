@@ -28,7 +28,7 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children, allowedRoles }) => 
       // Increase timeout to prevent rapid redirects
       timer = setTimeout(() => {
         setShouldRedirect(true);
-      }, 1000); // Increased from 500ms to 1000ms
+      }, 1500); // Increased from 1000ms to 1500ms
     } else {
       // If authenticated with correct role, ensure we're not redirecting
       setShouldRedirect(false);
@@ -72,8 +72,5 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children, allowedRoles }) => 
     }
   }
 
-  // Either authenticated with correct role or waiting for the redirect timeout
-  return isAuthenticated && isRoleAllowed() ? <>{children}</> : null;
-};
-
-export default RequireAuth;
+  // Return children directly if authenticated with correct role
+  return <>{children}</>;
