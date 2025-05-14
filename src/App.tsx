@@ -27,6 +27,7 @@ const App = () => (
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            {/* Public route - Login */}
             <Route path="/" element={<Login />} />
             
             {/* Legacy dashboard - will redirect based on role */}

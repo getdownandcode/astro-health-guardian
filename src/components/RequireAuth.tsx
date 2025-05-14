@@ -19,22 +19,27 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children, allowedRoles }) => 
     return user && allowedRoles.includes(user.role);
   };
 
-  // Use an effect with a timeout to prevent immediate redirects
+  // Use an effect with a longer timeout to prevent rapid redirects
   useEffect(() => {
     let timer: NodeJS.Timeout;
     
+    // Only set redirect if not loading and either not authenticated or wrong role
     if (!isLoading && (!isAuthenticated || (isAuthenticated && !isRoleAllowed()))) {
-      // Set a small delay before redirecting to prevent rapid redirects
+      // Increase timeout to prevent rapid redirects
       timer = setTimeout(() => {
         setShouldRedirect(true);
-      }, 500);
+      }, 1000); // Increased from 500ms to 1000ms
+    } else {
+      // If authenticated with correct role, ensure we're not redirecting
+      setShouldRedirect(false);
     }
     
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isLoading, isAuthenticated, user]);
+  }, [isLoading, isAuthenticated, user, allowedRoles]);
 
+  // Display loading state when authentication is in progress
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-space-gradient">
@@ -46,17 +51,24 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children, allowedRoles }) => 
     );
   }
 
+  // Handle redirect cases
   if (shouldRedirect) {
     // If not authenticated, redirect to login
     if (!isAuthenticated) {
+      console.log("Not authenticated, redirecting to login");
       return <Navigate to="/" state={{ from: location }} replace />;
     }
     
     // If authenticated but wrong role, redirect to appropriate dashboard
-    if (user && user.role === "doctor") {
-      return <Navigate to="/earth-dashboard" replace />;
-    } else if (user && user.role === "astronaut") {
-      return <Navigate to="/astronaut-dashboard" replace />;
+    if (user) {
+      console.log(`User role: ${user.role}, allowedRoles:`, allowedRoles);
+      if (user.role === "doctor" && (!allowedRoles || !allowedRoles.includes("doctor"))) {
+        console.log("Doctor user redirecting to earth dashboard");
+        return <Navigate to="/earth-dashboard" replace />;
+      } else if (user.role === "astronaut" && (!allowedRoles || !allowedRoles.includes("astronaut"))) {
+        console.log("Astronaut user redirecting to astronaut dashboard");
+        return <Navigate to="/astronaut-dashboard" replace />;
+      }
     }
   }
 

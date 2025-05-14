@@ -16,17 +16,34 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"doctor" | "astronaut">("doctor");
   const [isSignUp, setIsSignUp] = useState(false);
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
-  // If user is already authenticated, redirect to dashboard
+  // If user is already authenticated, redirect to appropriate dashboard
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      navigate("/dashboard");
+    if (isAuthenticated && !isLoading && user) {
+      console.log("Login page: User already authenticated as", user.role);
+      
+      // Get the intended destination from location state or use role-based default
+      const from = location.state?.from?.pathname;
+      
+      if (from && from !== "/") {
+        console.log("Redirecting to:", from);
+        navigate(from);
+      } else {
+        // If no specific destination, route based on role
+        if (user.role === "doctor") {
+          console.log("Redirecting to earth dashboard");
+          navigate("/earth-dashboard");
+        } else {
+          console.log("Redirecting to astronaut dashboard");
+          navigate("/astronaut-dashboard");
+        }
+      }
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, user, location.state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,10 +63,6 @@ const Login = () => {
           title: "Login successful",
           description: `Welcome back, ${role === "doctor" ? "Doctor" : "Astronaut"}!`,
         });
-        
-        // Get the intended destination from location state or default to dashboard
-        const from = location.state?.from?.pathname || "/dashboard";
-        navigate(from);
       }
     } catch (error) {
       console.error("Auth error:", error);
@@ -61,6 +74,31 @@ const Login = () => {
     }
   };
 
+  // If already loading (processing auth), show loading
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-space-gradient">
+        <div className="text-center">
+          <div className="mb-4">Processing...</div>
+          <p className="text-space-neutral">Verifying your credentials</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If already authenticated but still somehow on login page
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-space-gradient">
+        <div className="text-center">
+          <div className="mb-4">Already logged in</div>
+          <p className="text-space-neutral">Redirecting to your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login form if not authenticated
   return (
     <div className="min-h-screen flex items-center justify-center bg-space-gradient p-4">
       <div className="w-full max-w-md">
