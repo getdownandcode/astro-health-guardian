@@ -1,5 +1,13 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { 
+  User as FirebaseUser,
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  createUserWithEmailAndPassword
+} from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 type UserRole = "doctor" | "astronaut";
 
@@ -26,43 +34,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Check for existing user on load
+  
+  // Check for existing auth state on load
   useEffect(() => {
-    const storedUser = localStorage.getItem("astronaut-health-user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // If we have a firebase user, get the role from localStorage
+        const roleData = localStorage.getItem(`role_${firebaseUser.uid}`);
+        const role = roleData ? JSON.parse(roleData).role : "astronaut";
+        const name = firebaseUser.displayName || 
+                    (role === "doctor" ? "Dr. Elizabeth Harper" : "Alex Mitchell");
+        
+        const userData: User = {
+          id: firebaseUser.uid,
+          email: firebaseUser.email || "",
+          name: name,
+          role: role as UserRole,
+          ...(role === "astronaut" && { astronautId: "ast-001" })
+        };
+        
+        setUser(userData);
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+    
+    return () => unsubscribe();
   }, []);
 
-  // Mock login function - in a real app, this would call Firebase Auth
   const login = async (email: string, password: string, role: UserRole) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Sign in with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
       
-      // Mock authentication logic
-      if (email && password) {
-        // Mock user data
+      if (firebaseUser) {
+        // Save role selection to localStorage keyed by user ID
+        localStorage.setItem(`role_${firebaseUser.uid}`, JSON.stringify({ role }));
+        
+        // Create user data
         const userData: User = {
-          id: role === "doctor" ? "doc-001" : "ast-001",
-          email,
-          name: role === "doctor" ? "Dr. Elizabeth Harper" : "Alex Mitchell",
+          id: firebaseUser.uid,
+          email: firebaseUser.email || email,
+          name: firebaseUser.displayName || 
+                (role === "doctor" ? "Dr. Elizabeth Harper" : "Alex Mitchell"),
           role,
           ...(role === "astronaut" && { astronautId: "ast-001" })
         };
         
-        // Save to local storage
-        localStorage.setItem("astronaut-health-user", JSON.stringify(userData));
         setUser(userData);
-      } else {
-        throw new Error("Invalid credentials");
       }
     } catch (err) {
+      console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "An error occurred during login");
       throw err;
     } finally {
@@ -70,9 +97,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("astronaut-health-user");
-    setUser(null);
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      // When signing out, no need to remove role from localStorage
+      // as it's keyed by user ID and will be inaccessible
+      setUser(null);
+    } catch (err) {
+      console.error("Logout error:", err);
+      setError(err instanceof Error ? err.message : "An error occurred during logout");
+    }
   };
 
   return (
