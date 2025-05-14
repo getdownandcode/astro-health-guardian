@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import EarthDashboard from "./pages/EarthDashboard";
+import AstronautDashboard from "./pages/AstronautDashboard";
 import AstronautDetail from "./pages/AstronautDetail";
 import Astronauts from "./pages/Astronauts";
 import Alerts from "./pages/Alerts";
@@ -26,18 +28,36 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
+            
+            {/* Legacy dashboard - will redirect based on role */}
             <Route path="/dashboard" element={
               <RequireAuth>
                 <Dashboard />
               </RequireAuth>
             } />
+            
+            {/* Earth-side (Doctor) routes */}
+            <Route path="/earth-dashboard" element={
+              <RequireAuth allowedRoles={["doctor"]}>
+                <EarthDashboard />
+              </RequireAuth>
+            } />
+            
+            {/* Astronaut-side routes */}
+            <Route path="/astronaut-dashboard" element={
+              <RequireAuth allowedRoles={["astronaut"]}>
+                <AstronautDashboard />
+              </RequireAuth>
+            } />
+            
+            {/* Common routes with role-based access */}
             <Route path="/astronaut/:id" element={
               <RequireAuth>
                 <AstronautDetail />
               </RequireAuth>
             } />
             <Route path="/astronauts" element={
-              <RequireAuth>
+              <RequireAuth allowedRoles={["doctor"]}>
                 <Astronauts />
               </RequireAuth>
             } />

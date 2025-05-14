@@ -5,19 +5,25 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface RequireAuthProps {
   children: React.ReactNode;
+  allowedRoles?: Array<"doctor" | "astronaut">;
 }
 
-const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const RequireAuth: React.FC<RequireAuthProps> = ({ children, allowedRoles }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
+  // Check if user role is allowed for this route
+  const isRoleAllowed = () => {
+    if (!allowedRoles || allowedRoles.length === 0) return true;
+    return user && allowedRoles.includes(user.role);
+  };
+
   // Use an effect with a timeout to prevent immediate redirects
-  // This solves the "bouncing" between pages issue
   useEffect(() => {
     let timer: NodeJS.Timeout;
     
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && (!isAuthenticated || (isAuthenticated && !isRoleAllowed()))) {
       // Set a small delay before redirecting to prevent rapid redirects
       timer = setTimeout(() => {
         setShouldRedirect(true);
@@ -27,7 +33,7 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isLoading, isAuthenticated]);
+  }, [isLoading, isAuthenticated, user]);
 
   if (isLoading) {
     return (
@@ -40,13 +46,22 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated && shouldRedirect) {
-    // Redirect to login page with the return url
-    return <Navigate to="/" state={{ from: location }} replace />;
+  if (shouldRedirect) {
+    // If not authenticated, redirect to login
+    if (!isAuthenticated) {
+      return <Navigate to="/" state={{ from: location }} replace />;
+    }
+    
+    // If authenticated but wrong role, redirect to appropriate dashboard
+    if (user && user.role === "doctor") {
+      return <Navigate to="/earth-dashboard" replace />;
+    } else if (user && user.role === "astronaut") {
+      return <Navigate to="/astronaut-dashboard" replace />;
+    }
   }
 
-  // Either authenticated or waiting for the redirect timeout
-  return isAuthenticated ? <>{children}</> : null;
+  // Either authenticated with correct role or waiting for the redirect timeout
+  return isAuthenticated && isRoleAllowed() ? <>{children}</> : null;
 };
 
 export default RequireAuth;
