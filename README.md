@@ -1,8 +1,4 @@
-# Welcome to your Lovable project
-
-## Project info
-
-**URL**: https://lovable.dev/projects/558b8d4f-ebbb-4e4d-bc44-d786ac5f4048
+# Welcome to your Space Crew Health
 
 ## How can I edit this code?
 
