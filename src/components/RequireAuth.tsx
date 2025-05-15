@@ -74,3 +74,6 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children, allowedRoles }) => 
 
   // Return children directly if authenticated with correct role
   return <>{children}</>;
+};
+
+export default RequireAuth;
