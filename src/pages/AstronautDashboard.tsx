@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import RiskBadge from "@/components/RiskBadge";
+import TaskCheckbox from "@/components/TaskCheckbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAstronauts } from "@/services/mockData";
 import Layout from "@/components/Layout";
@@ -103,6 +104,26 @@ const AstronautDashboard = () => {
                 </p>
               </div>
             )}
+
+            {/* Tasks Section */}
+            <div>
+              <h3 className="text-sm font-medium mb-3">Your Medical Tasks:</h3>
+              <div className="space-y-2 border border-border/50 rounded-md p-4 bg-secondary/20">
+                {astronaut.tasks && Object.values(astronaut.tasks).length > 0 ? (
+                  Object.values(astronaut.tasks).map((task) => (
+                    <TaskCheckbox
+                      key={task.id}
+                      astronautId={astronaut.astronaut_profile.id}
+                      taskId={task.id}
+                      title={task.title}
+                      completed={task.completed}
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No tasks assigned</p>
+                )}
+              </div>
+            </div>
             
             <div>
               <h3 className="text-sm font-medium mb-2">Medical Recommendations:</h3>

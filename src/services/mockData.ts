@@ -1,11 +1,10 @@
-
 import { AstronautData } from "../types/astronaut";
 
 export const ASTRONAUT_DATA: AstronautData[] = [
   {
     astronaut_profile: {
       id: "ast-001",
-      name: "Alex Mitchell",
+      name: "Vikram Singh",
       age: 50,
       gender: "M",
       heart_rate: 110,
@@ -44,12 +43,17 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       heart_rate: "Immediate ECG for heart rate >100 bpm.",
       blood_pressure: "Monitor BP every 2 hours, report if systolic >140."
     },
+    tasks: {
+      "task-001": { id: "task-001", title: "Complete health assessment", completed: false },
+      "task-002": { id: "task-002", title: "Take prescribed medication", completed: true },
+      "task-003": { id: "task-003", title: "Monitor blood pressure every 2 hours", completed: false }
+    },
     timestamp: "2025-05-15 00:40:00 IST"
   },
   {
     astronaut_profile: {
       id: "ast-002",
-      name: "Sarah Chen",
+      name: "Priya Sharma",
       age: 40,
       gender: "F",
       heart_rate: 85,
@@ -87,12 +91,16 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       heart_rate: "Schedule cardio assessment if heart rate consistently >80 bpm.",
       blood_pressure: "Implement DASH diet principles to manage BP."
     },
+    tasks: {
+      "task-001": { id: "task-001", title: "Complete daily exercise routine", completed: false },
+      "task-002": { id: "task-002", title: "Record food intake for sodium tracking", completed: true }
+    },
     timestamp: "2025-05-15 00:40:00 IST"
   },
   {
     astronaut_profile: {
       id: "ast-003",
-      name: "Miguel Sanchez",
+      name: "Arjun Patel",
       age: 35,
       gender: "M",
       heart_rate: 65,
@@ -126,12 +134,16 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       general: "Maintain current health practices and monitoring schedule.",
       preventative: "Complete annual comprehensive health assessment as scheduled."
     },
+    tasks: {
+      "task-001": { id: "task-001", title: "Log daily meditation session", completed: true },
+      "task-002": { id: "task-002", title: "Complete weekly fitness assessment", completed: false }
+    },
     timestamp: "2025-05-15 00:40:00 IST"
   },
   {
     astronaut_profile: {
       id: "ast-004",
-      name: "Rachel Foster",
+      name: "Ananya Desai",
       age: 48,
       gender: "F",
       heart_rate: 105,
@@ -170,12 +182,17 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       heart_rate: "ECG monitoring and potential medication intervention advised.",
       blood_pressure: "Monitor BP every 2 hours, consider medication if consistently elevated."
     },
+    tasks: {
+      "task-001": { id: "task-001", title: "Report to medical bay for ECG", completed: false },
+      "task-002": { id: "task-002", title: "Reduce physical activity for 24 hours", completed: true },
+      "task-003": { id: "task-003", title: "Complete stress reduction protocol", completed: false }
+    },
     timestamp: "2025-05-15 00:40:00 IST"
   },
   {
     astronaut_profile: {
       id: "ast-005",
-      name: "Thomas Wilson",
+      name: "Rahul Kapoor",
       age: 38,
       gender: "M",
       heart_rate: 82,
@@ -210,6 +227,10 @@ export const ASTRONAUT_DATA: AstronautData[] = [
     rule_based_recommendations: {
       heart_rate: "Monitor heart rate during exercise to ensure it doesn't exceed 150 bpm.",
       stress: "Implement 15-minute meditation sessions twice daily to manage stress levels."
+    },
+    tasks: {
+      "task-001": { id: "task-001", title: "Complete 15-minute meditation", completed: false },
+      "task-002": { id: "task-002", title: "Record heart rate during exercise", completed: true }
     },
     timestamp: "2025-05-15 00:40:00 IST"
   }
@@ -380,4 +401,30 @@ export const getChatHistory = (astronautId: string) => {
     case "Critical": return criticalRiskChat;
     default: return lowRiskChat;
   }
+};
+
+// New function to toggle task completion status
+export const toggleTaskCompletion = (astronautId: string, taskId: string) => {
+  const astronautIndex = ASTRONAUT_DATA.findIndex(
+    astronaut => astronaut.astronaut_profile.id === astronautId
+  );
+  
+  if (astronautIndex === -1) return false;
+  
+  const astronaut = ASTRONAUT_DATA[astronautIndex];
+  if (!astronaut.tasks || !astronaut.tasks[taskId]) return false;
+  
+  // Toggle the task completion status
+  ASTRONAUT_DATA[astronautIndex] = {
+    ...astronaut,
+    tasks: {
+      ...astronaut.tasks,
+      [taskId]: {
+        ...astronaut.tasks[taskId],
+        completed: !astronaut.tasks[taskId].completed
+      }
+    }
+  };
+  
+  return true;
 };

@@ -57,11 +57,22 @@ export interface RuleBasedRecommendations {
   [key: string]: string;
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
+export interface Tasks {
+  [key: string]: Task;
+}
+
 export interface AstronautData {
   astronaut_profile: AstronautProfile;
   prediction: Prediction;
   anomaly_detection: AnomalyDetection;
   clinical_insights: ClinicalInsights;
   rule_based_recommendations: RuleBasedRecommendations;
+  tasks: Tasks;
   timestamp: string;
 }

@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import RiskBadge from "@/components/RiskBadge";
 import AnomalyAlert from "@/components/AnomalyAlert";
+import TaskCheckbox from "@/components/TaskCheckbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAstronauts, getAnomalies } from "@/services/mockData";
 import Layout from "@/components/Layout";
@@ -15,6 +16,7 @@ const EarthDashboard = () => {
   const navigate = useNavigate();
   const astronauts = getAstronauts();
   const anomalies = getAnomalies();
+  const [expandedAstronaut, setExpandedAstronaut] = useState<string | null>(null);
 
   // Risk level counts
   const riskCounts = {
@@ -22,6 +24,11 @@ const EarthDashboard = () => {
     High: astronauts.filter(a => a.prediction.risk_level === "High").length,
     Medium: astronauts.filter(a => a.prediction.risk_level === "Medium").length,
     Low: astronauts.filter(a => a.prediction.risk_level === "Low").length,
+  };
+
+  // Toggle task expansion for an astronaut
+  const toggleTaskExpand = (id: string) => {
+    setExpandedAstronaut(expandedAstronaut === id ? null : id);
   };
 
   return (
@@ -100,11 +107,15 @@ const EarthDashboard = () => {
               <Card 
                 key={astronaut.astronaut_profile.id} 
                 className="space-card hover:bg-card/70 cursor-pointer transition-colors"
-                onClick={() => navigate(`/astronaut/${astronaut.astronaut_profile.id}`)}
               >
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">{astronaut.astronaut_profile.name}</CardTitle>
+                    <CardTitle 
+                      className="text-lg"
+                      onClick={() => navigate(`/astronaut/${astronaut.astronaut_profile.id}`)}
+                    >
+                      {astronaut.astronaut_profile.name}
+                    </CardTitle>
                     <RiskBadge 
                       risk={astronaut.prediction.risk_level} 
                       animate={astronaut.prediction.risk_level === "Critical"}
@@ -161,10 +172,44 @@ const EarthDashboard = () => {
                     </div>
                   )}
 
+                  {/* Task Management Section */}
+                  <div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full text-xs justify-between"
+                      onClick={() => toggleTaskExpand(astronaut.astronaut_profile.id)}
+                    >
+                      <span>Assigned Tasks</span>
+                      <span className="badge bg-primary/20 text-primary px-2 rounded-full">
+                        {astronaut.tasks ? Object.values(astronaut.tasks).length : 0}
+                      </span>
+                    </Button>
+                    
+                    {expandedAstronaut === astronaut.astronaut_profile.id && (
+                      <div className="mt-2 space-y-2 border border-border/50 rounded-md p-3 bg-secondary/20">
+                        {astronaut.tasks && Object.values(astronaut.tasks).length > 0 ? (
+                          Object.values(astronaut.tasks).map((task) => (
+                            <TaskCheckbox
+                              key={task.id}
+                              astronautId={astronaut.astronaut_profile.id}
+                              taskId={task.id}
+                              title={task.title}
+                              completed={task.completed}
+                            />
+                          ))
+                        ) : (
+                          <p className="text-xs text-muted-foreground">No tasks assigned</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="w-full text-xs"
+                    onClick={() => navigate(`/astronaut/${astronaut.astronaut_profile.id}`)}
                   >
                     View Full Profile
                   </Button>
