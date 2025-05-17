@@ -1,34 +1,92 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from "@/components/Layout";
-import { getAstronauts, getChatHistory } from "@/services/mockData";
-import { AlertCircle, Send } from "lucide-react";
+import { getAstronauts, getChatHistory, addChatMessage, toggleTaskCompletion } from "@/services/mockData";
+import { AlertCircle, Send, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import RiskBadge from "@/components/RiskBadge";
+import TaskCheckbox from "@/components/TaskCheckbox";
 
 const Chat = () => {
   const { toast } = useToast();
   const astronauts = getAstronauts();
   const [activeAstronaut, setActiveAstronaut] = useState(astronauts[0]?.astronaut_profile.id || "");
   const [message, setMessage] = useState("");
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const chatHistory = activeAstronaut ? getChatHistory(activeAstronaut) : [];
   const currentAstronaut = astronauts.find(a => a.astronaut_profile.id === activeAstronaut);
+  
+  useEffect(() => {
+    if (activeAstronaut) {
+      const history = getChatHistory(activeAstronaut);
+      setChatMessages(history);
+    }
+  }, [activeAstronaut]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages]);
   
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
     
-    toast({
-      title: "Message Sent",
-      description: "Your message has been delivered to the astronaut."
+    // Add the message to chat history
+    const success = addChatMessage(activeAstronaut, {
+      sender: "doctor",
+      text: message
     });
     
-    setMessage("");
+    if (success) {
+      // Get updated chat history
+      const updatedHistory = getChatHistory(activeAstronaut);
+      setChatMessages(updatedHistory);
+      
+      toast({
+        title: "Message Sent",
+        description: "Your message has been delivered to the astronaut."
+      });
+      
+      // Generate automatic response after a delay (simulating astronaut or AI response)
+      setTimeout(() => {
+        const responseSuccess = addChatMessage(activeAstronaut, {
+          sender: "astronaut",
+          text: `Thanks for your message. This is an automated response to "${message.substring(0, 30)}${message.length > 30 ? '...' : ''}"`
+        });
+        
+        if (responseSuccess) {
+          const updatedHistory = getChatHistory(activeAstronaut);
+          setChatMessages(updatedHistory);
+        }
+      }, 2000);
+      
+      setMessage("");
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  
+  const handleTaskToggle = (taskId: string, completed: boolean) => {
+    const success = toggleTaskCompletion(activeAstronaut, taskId);
+    if (success) {
+      // Get updated astronaut data to refresh task status
+      const astronauts = getAstronauts();
+      const updatedAstronaut = astronauts.find(a => a.astronaut_profile.id === activeAstronaut);
+      if (updatedAstronaut) {
+        // Update task list (will be handled by re-render)
+        toast({
+          title: completed ? "Task marked as incomplete" : "Task completed",
+          description: "The task status has been updated.",
+        });
+      }
+    }
   };
 
   return (
@@ -95,13 +153,14 @@ const Chat = () => {
                     <TabsList>
                       <TabsTrigger value="chat">Chat</TabsTrigger>
                       <TabsTrigger value="vitals">Vitals</TabsTrigger>
+                      <TabsTrigger value="tasks">Tasks</TabsTrigger>
                       <TabsTrigger value="notes">Clinical Notes</TabsTrigger>
                     </TabsList>
                   </div>
                   
                   <TabsContent value="chat" className="flex-1 flex flex-col p-0">
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                      {chatHistory.map((message) => (
+                      {chatMessages.map((message) => (
                         <div 
                           key={message.id}
                           className={`flex ${message.sender === "doctor" ? "justify-start" : message.sender === "system" ? "justify-center" : "justify-end"}`}
@@ -124,6 +183,7 @@ const Chat = () => {
                           )}
                         </div>
                       ))}
+                      <div ref={messagesEndRef} />
                     </div>
                     
                     <div className="p-4 border-t border-border">
@@ -139,6 +199,25 @@ const Chat = () => {
                           Send
                         </Button>
                       </form>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="tasks" className="p-4 space-y-4">
+                    <h3 className="font-medium">Assigned Tasks</h3>
+                    <div className="space-y-2">
+                      {currentAstronaut && Object.values(currentAstronaut.tasks).map((task) => (
+                        <TaskCheckbox 
+                          key={task.id}
+                          astronautId={currentAstronaut.astronaut_profile.id}
+                          taskId={task.id}
+                          title={task.title}
+                          description={task.description}
+                          completed={task.completed}
+                        />
+                      ))}
+                      {currentAstronaut && Object.values(currentAstronaut.tasks).length === 0 && (
+                        <p className="text-sm text-space-neutral">No tasks assigned</p>
+                      )}
                     </div>
                   </TabsContent>
                   
