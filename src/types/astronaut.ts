@@ -60,11 +60,27 @@ export interface RuleBasedRecommendations {
 export interface Task {
   id: string;
   title: string;
+  description?: string;
   completed: boolean;
 }
 
 export interface Tasks {
   [key: string]: Task;
+}
+
+export interface Query {
+  id: string;
+  message: string;
+  timestamp: string;
+  response?: {
+    message: string;
+    timestamp: string;
+    isAI?: boolean;
+  };
+}
+
+export interface Queries {
+  [key: string]: Query;
 }
 
 export interface AstronautData {
@@ -74,5 +90,6 @@ export interface AstronautData {
   clinical_insights: ClinicalInsights;
   rule_based_recommendations: RuleBasedRecommendations;
   tasks: Tasks;
+  queries: Queries;
   timestamp: string;
 }

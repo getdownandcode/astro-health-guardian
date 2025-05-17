@@ -1,14 +1,16 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import RiskBadge from "@/components/RiskBadge";
 import TaskCheckbox from "@/components/TaskCheckbox";
+import QueryForm from "@/components/QueryForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAstronauts } from "@/services/mockData";
 import Layout from "@/components/Layout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AstronautDashboard = () => {
   const { user } = useAuth();
@@ -105,25 +107,71 @@ const AstronautDashboard = () => {
               </div>
             )}
 
-            {/* Tasks Section */}
-            <div>
-              <h3 className="text-sm font-medium mb-3">Your Medical Tasks:</h3>
-              <div className="space-y-2 border border-border/50 rounded-md p-4 bg-secondary/20">
-                {astronaut.tasks && Object.values(astronaut.tasks).length > 0 ? (
-                  Object.values(astronaut.tasks).map((task) => (
-                    <TaskCheckbox
-                      key={task.id}
-                      astronautId={astronaut.astronaut_profile.id}
-                      taskId={task.id}
-                      title={task.title}
-                      completed={task.completed}
-                    />
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">No tasks assigned</p>
-                )}
-              </div>
-            </div>
+            <Tabs defaultValue="tasks" className="w-full">
+              <TabsList className="w-full">
+                <TabsTrigger value="tasks" className="flex-1">Medical Tasks</TabsTrigger>
+                <TabsTrigger value="query" className="flex-1">Ask Medical Team</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="tasks">
+                {/* Tasks Section */}
+                <div className="space-y-2 border border-border/50 rounded-md p-4 bg-secondary/20">
+                  {astronaut.tasks && Object.values(astronaut.tasks).length > 0 ? (
+                    Object.values(astronaut.tasks).map((task) => (
+                      <TaskCheckbox
+                        key={task.id}
+                        astronautId={astronaut.astronaut_profile.id}
+                        taskId={task.id}
+                        title={task.title}
+                        description={task.description}
+                        completed={task.completed}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No tasks assigned</p>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="query">
+                <div className="space-y-4">
+                  <QueryForm astronautId={astronaut.astronaut_profile.id} />
+                  
+                  {astronaut.queries && Object.values(astronaut.queries).length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="text-sm font-medium mb-3">Previous Queries:</h3>
+                      <div className="space-y-4">
+                        {Object.values(astronaut.queries).map((query) => (
+                          <div key={query.id} className="border border-border/50 rounded-md p-3">
+                            <div className="flex justify-between mb-2">
+                              <p className="text-sm font-medium">Your Query:</p>
+                              <p className="text-xs text-muted-foreground">{query.timestamp}</p>
+                            </div>
+                            <p className="text-sm mb-4">{query.message}</p>
+                            
+                            {query.response ? (
+                              <div className="bg-secondary/20 p-3 rounded-md">
+                                <div className="flex justify-between mb-1">
+                                  <p className="text-xs font-medium">
+                                    {query.response.isAI ? "AI Assistant" : "Medical Team"} Response:
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">{query.response.timestamp}</p>
+                                </div>
+                                <p className="text-sm">{query.response.message}</p>
+                              </div>
+                            ) : (
+                              <div className="bg-secondary/10 p-3 rounded-md text-center">
+                                <p className="text-xs text-muted-foreground">Awaiting response...</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
             
             <div>
               <h3 className="text-sm font-medium mb-2">Medical Recommendations:</h3>

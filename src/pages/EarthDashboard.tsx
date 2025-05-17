@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import RiskBadge from "@/components/RiskBadge";
 import AnomalyAlert from "@/components/AnomalyAlert";
-import TaskCheckbox from "@/components/TaskCheckbox";
+import TaskManager from "@/components/TaskManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAstronauts, getAnomalies } from "@/services/mockData";
 import Layout from "@/components/Layout";
@@ -106,12 +105,12 @@ const EarthDashboard = () => {
             {astronauts.map((astronaut) => (
               <Card 
                 key={astronaut.astronaut_profile.id} 
-                className="space-card hover:bg-card/70 cursor-pointer transition-colors"
+                className="space-card hover:bg-card/70 transition-colors"
               >
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-center">
                     <CardTitle 
-                      className="text-lg"
+                      className="text-lg cursor-pointer"
                       onClick={() => navigate(`/astronaut/${astronaut.astronaut_profile.id}`)}
                     >
                       {astronaut.astronaut_profile.name}
@@ -173,37 +172,11 @@ const EarthDashboard = () => {
                   )}
 
                   {/* Task Management Section */}
-                  <div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="w-full text-xs justify-between"
-                      onClick={() => toggleTaskExpand(astronaut.astronaut_profile.id)}
-                    >
-                      <span>Assigned Tasks</span>
-                      <span className="badge bg-primary/20 text-primary px-2 rounded-full">
-                        {astronaut.tasks ? Object.values(astronaut.tasks).length : 0}
-                      </span>
-                    </Button>
-                    
-                    {expandedAstronaut === astronaut.astronaut_profile.id && (
-                      <div className="mt-2 space-y-2 border border-border/50 rounded-md p-3 bg-secondary/20">
-                        {astronaut.tasks && Object.values(astronaut.tasks).length > 0 ? (
-                          Object.values(astronaut.tasks).map((task) => (
-                            <TaskCheckbox
-                              key={task.id}
-                              astronautId={astronaut.astronaut_profile.id}
-                              taskId={task.id}
-                              title={task.title}
-                              completed={task.completed}
-                            />
-                          ))
-                        ) : (
-                          <p className="text-xs text-muted-foreground">No tasks assigned</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <TaskManager 
+                    astronautId={astronaut.astronaut_profile.id}
+                    astronautName={astronaut.astronaut_profile.name}
+                    tasks={astronaut.tasks || {}}
+                  />
 
                   <Button 
                     variant="outline" 

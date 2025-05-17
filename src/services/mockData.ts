@@ -236,6 +236,8 @@ export const ASTRONAUT_DATA: AstronautData[] = [
   }
 ];
 
+export const mockData = ASTRONAUT_DATA;
+
 export const getAstronauts = () => {
   return ASTRONAUT_DATA;
 };
@@ -403,28 +405,132 @@ export const getChatHistory = (astronautId: string) => {
   }
 };
 
-// New function to toggle task completion status
-export const toggleTaskCompletion = (astronautId: string, taskId: string) => {
-  const astronautIndex = ASTRONAUT_DATA.findIndex(
-    astronaut => astronaut.astronaut_profile.id === astronautId
-  );
-  
-  if (astronautIndex === -1) return false;
-  
-  const astronaut = ASTRONAUT_DATA[astronautIndex];
-  if (!astronaut.tasks || !astronaut.tasks[taskId]) return false;
-  
-  // Toggle the task completion status
-  ASTRONAUT_DATA[astronautIndex] = {
-    ...astronaut,
-    tasks: {
-      ...astronaut.tasks,
-      [taskId]: {
-        ...astronaut.tasks[taskId],
-        completed: !astronaut.tasks[taskId].completed
-      }
+// Task management functions
+export const addTask = (astronautId: string, title: string, description?: string): boolean => {
+  try {
+    const astronaut = mockData.find(a => a.astronaut_profile.id === astronautId);
+    if (!astronaut) return false;
+    
+    // Initialize tasks object if it doesn't exist
+    if (!astronaut.tasks) {
+      astronaut.tasks = {};
     }
-  };
-  
-  return true;
+    
+    const newTaskId = `task-${Date.now()}`;
+    astronaut.tasks[newTaskId] = {
+      id: newTaskId,
+      title,
+      description,
+      completed: false
+    };
+    
+    return true;
+  } catch (error) {
+    console.error("Error adding task:", error);
+    return false;
+  }
 };
+
+export const updateTask = (astronautId: string, taskId: string, title: string, description?: string): boolean => {
+  try {
+    const astronaut = mockData.find(a => a.astronaut_profile.id === astronautId);
+    if (!astronaut || !astronaut.tasks || !astronaut.tasks[taskId]) return false;
+    
+    astronaut.tasks[taskId].title = title;
+    
+    if (description !== undefined) {
+      astronaut.tasks[taskId].description = description;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating task:", error);
+    return false;
+  }
+};
+
+export const deleteTask = (astronautId: string, taskId: string): boolean => {
+  try {
+    const astronaut = mockData.find(a => a.astronaut_profile.id === astronautId);
+    if (!astronaut || !astronaut.tasks || !astronaut.tasks[taskId]) return false;
+    
+    delete astronaut.tasks[taskId];
+    return true;
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    return false;
+  }
+};
+
+export const toggleTaskCompletion = (astronautId: string, taskId: string): boolean => {
+  try {
+    const astronaut = mockData.find(a => a.astronaut_profile.id === astronautId);
+    if (!astronaut || !astronaut.tasks || !astronaut.tasks[taskId]) return false;
+    
+    astronaut.tasks[taskId].completed = !astronaut.tasks[taskId].completed;
+    return true;
+  } catch (error) {
+    console.error("Error toggling task completion:", error);
+    return false;
+  }
+};
+
+// Query management functions
+export const addQuery = (astronautId: string, message: string): boolean => {
+  try {
+    const astronaut = mockData.find(a => a.astronaut_profile.id === astronautId);
+    if (!astronaut) return false;
+    
+    // Initialize queries object if it doesn't exist
+    if (!astronaut.queries) {
+      astronaut.queries = {};
+    }
+    
+    const newQueryId = `query-${Date.now()}`;
+    const currentDate = new Date().toISOString().split('T')[0];
+    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    astronaut.queries[newQueryId] = {
+      id: newQueryId,
+      message,
+      timestamp: `${currentDate} ${currentTime}`,
+      // Simulate an automatic AI response for demo purposes
+      response: {
+        message: getAutomatedResponse(astronaut, message),
+        timestamp: `${currentDate} ${currentTime}`,
+        isAI: true
+      }
+    };
+    
+    return true;
+  } catch (error) {
+    console.error("Error adding query:", error);
+    return false;
+  }
+};
+
+// Helper function to generate automated responses
+function getAutomatedResponse(astronaut: any, query: string): string {
+  const lowercaseQuery = query.toLowerCase();
+  
+  if (lowercaseQuery.includes("headache") || lowercaseQuery.includes("head") || lowercaseQuery.includes("pain")) {
+    return "Based on your vitals, your headache may be related to slight dehydration. Please increase your fluid intake and take a rest period of 30 minutes. If symptoms persist, schedule a full examination.";
+  }
+  
+  if (lowercaseQuery.includes("sleep") || lowercaseQuery.includes("tired") || lowercaseQuery.includes("fatigue")) {
+    return `Our records show you've been sleeping ${astronaut.astronaut_profile.sleep_hours} hours per night. This is ${astronaut.astronaut_profile.sleep_hours < 7 ? "below" : "within"} the recommended range. Try to maintain consistent sleep schedules and use the relaxation exercises in your training protocol.`;
+  }
+  
+  if (lowercaseQuery.includes("stress") || lowercaseQuery.includes("anxiety") || lowercaseQuery.includes("worried")) {
+    return `Your current stress level is rated at ${astronaut.astronaut_profile.stress_level.value}/10. I recommend scheduling a virtual counseling session and practicing the mindfulness exercises from your training module 3.`;
+  }
+  
+  if (lowercaseQuery.includes("blood pressure") || lowercaseQuery.includes("heart") || lowercaseQuery.includes("bp")) {
+    return `Your current readings show BP: ${astronaut.astronaut_profile.bp_systolic}/${astronaut.astronaut_profile.bp_diastolic}, HR: ${astronaut.astronaut_profile.heart_rate}. ${astronaut.astronaut_profile.bp_systolic > 130 ? "This is slightly elevated. Try to reduce sodium intake and perform relaxation exercises." : "This is within normal parameters for your profile."}`;
+  }
+  
+  return "Thank you for your query. The medical team will review your message and respond shortly. Meanwhile, continue following your current health protocol and monitor your symptoms.";
+}
+
+// Export all functions
+export { mockData, getAstronauts, getAstronautById, getAnomalies, getChatHistory };
