@@ -57,7 +57,11 @@ const TaskManager: React.FC<TaskManagerProps> = ({ astronautId, astronautName, t
   });
 
   const handleAddTask = (data: TaskFormValues) => {
-    const success = addTask(astronautId, data.title, data.description || "");
+    // Fix: Pass only title and description as an object, not as separate arguments
+    const success = addTask(astronautId, {
+      title: data.title,
+      description: data.description || ""
+    });
     
     if (success) {
       toast({
@@ -78,7 +82,11 @@ const TaskManager: React.FC<TaskManagerProps> = ({ astronautId, astronautName, t
   const handleEditTask = (data: TaskFormValues) => {
     if (!selectedTask) return;
 
-    const success = updateTask(astronautId, selectedTask.id, data.title);
+    // Fix: Pass an object with title property rather than just the string
+    const success = updateTask(astronautId, selectedTask.id, {
+      title: data.title,
+      description: data.description
+    });
     
     if (success) {
       toast({
