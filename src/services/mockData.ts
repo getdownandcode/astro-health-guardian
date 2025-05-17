@@ -1,3 +1,4 @@
+
 import { AstronautData } from "../types/astronaut";
 
 export const ASTRONAUT_DATA: AstronautData[] = [
@@ -48,6 +49,7 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       "task-002": { id: "task-002", title: "Take prescribed medication", completed: true },
       "task-003": { id: "task-003", title: "Monitor blood pressure every 2 hours", completed: false }
     },
+    queries: {}, // Add empty queries object
     timestamp: "2025-05-15 00:40:00 IST"
   },
   {
@@ -95,6 +97,7 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       "task-001": { id: "task-001", title: "Complete daily exercise routine", completed: false },
       "task-002": { id: "task-002", title: "Record food intake for sodium tracking", completed: true }
     },
+    queries: {}, // Add empty queries object
     timestamp: "2025-05-15 00:40:00 IST"
   },
   {
@@ -138,6 +141,7 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       "task-001": { id: "task-001", title: "Log daily meditation session", completed: true },
       "task-002": { id: "task-002", title: "Complete weekly fitness assessment", completed: false }
     },
+    queries: {}, // Add empty queries object
     timestamp: "2025-05-15 00:40:00 IST"
   },
   {
@@ -187,6 +191,7 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       "task-002": { id: "task-002", title: "Reduce physical activity for 24 hours", completed: true },
       "task-003": { id: "task-003", title: "Complete stress reduction protocol", completed: false }
     },
+    queries: {}, // Add empty queries object
     timestamp: "2025-05-15 00:40:00 IST"
   },
   {
@@ -232,6 +237,7 @@ export const ASTRONAUT_DATA: AstronautData[] = [
       "task-001": { id: "task-001", title: "Complete 15-minute meditation", completed: false },
       "task-002": { id: "task-002", title: "Record heart rate during exercise", completed: true }
     },
+    queries: {}, // Add empty queries object
     timestamp: "2025-05-15 00:40:00 IST"
   }
 ];
@@ -532,5 +538,4 @@ function getAutomatedResponse(astronaut: any, query: string): string {
   return "Thank you for your query. The medical team will review your message and respond shortly. Meanwhile, continue following your current health protocol and monitor your symptoms.";
 }
 
-// Export all functions
-export { mockData, getAstronauts, getAstronautById, getAnomalies, getChatHistory };
+// Removing duplicate exports at the end of the file
